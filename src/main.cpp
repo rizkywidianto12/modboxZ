@@ -1,4 +1,5 @@
 #include <Arduino.h>
+bool on = 0;
 
 const int coil = 4;      // PWM Output ==>>> Gate mosfet
 const int ledPin = 2;    // LED indikator
@@ -6,13 +7,12 @@ const int fire  = 13;    // Tombol Firing
 const int up = 14;       // tombol nambah watt
 const int don = 12;      // tombol mengurangi watt
 
-//##############################################
-
 int buttonState = 0;         // variable for reading the pushbutton status
 int buttonState1 = 0;         // variable for reading the pushbutton status
 int pwm =0;
 int prestate =0;
 
+//##############################################
 void set() {
   // read the state of the pushbutton value:
   buttonState = digitalRead(up);
@@ -39,19 +39,30 @@ void set() {
     prestate = 0;
   }
 }
-//##############################################
+// ##############################################
+unsigned ButtonPressCount = 0;
 
-void setup()  
-    { 
-     // nothing happens in setup 
-  pinMode(up, INPUT_PULLUP);
-  pinMode(don, INPUT_PULLUP);
-  pinMode(fire, INPUT_PULLUP);
-  pinMode(coil,1);
-  pinMode(ledPin,1);
-    } 
- 
-void loop() 
+void poweronoff()
+{
+  static unsigned long buttonPressTime = 0;
+
+
+  if (!digitalRead(fire) && (millis() - buttonPressTime > 50))
+  {
+    buttonPressTime = millis();  // Debounce timer start
+    ButtonPressCount++;
+  }
+  
+  if (ButtonPressCount == 3)
+  {
+    on = !on;
+  }
+}
+
+// ##############################################
+
+
+void proses()
     { 
       int fadeValue = map(pwm, 0, 10, 0, 255);   // sets the value (range from 0 to 255):
       if(digitalRead(fire)==0){
@@ -63,8 +74,21 @@ void loop()
         digitalWrite(ledPin,1);
         set();
       }
-      // wait for 30 milliseconds to see the dimming effect    
-      delay(30);                            
+      // wait for 3 milliseconds to see the dimming effect    
+      delay(3);                            
     }
 
     
+void setup()  
+    { 
+     // nothing happens in setup 
+  pinMode(up, INPUT_PULLUP);
+  pinMode(don, INPUT_PULLUP);
+  pinMode(fire, INPUT_PULLUP);
+  pinMode(coil,1);
+  pinMode(ledPin,1);
+    } 
+ 
+void loop() {
+
+}
