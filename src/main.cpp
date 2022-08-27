@@ -1,21 +1,23 @@
 #include <Arduino.h>
-bool on = 0;
-bool firestate = 0;
+bool on              = 0;
+bool firestate       = 0;
 
-bool debug = 1;
-const int potensio = 1;
+bool debug           = 0 ;       // ga ngerti, matiin aja
+const int potensio   = 1;        // Isi 1 kalo pake potensio,
 
-const int coil = 4;      // PWM Output ==>>> Gate mosfet
-const int ledPin = 2;    // LED indikator
-const int fire  = 13;    // Tombol Firing ; D7 nodeMCU
-const int up = 14;       // tombol nambah watt
-const int don = 12;      // tombol mengurangi watt
+const int coil       = 0;        // PWM Output ==>>> Gate mosfet
+const int ledPin     = 2;        // LED indikator 
+const int fire       = A2;       // Tombol Firing ; D7 nodeMCU
+const int potPin     = A3;
+const int up         = 14;       // tombol nambah watt
+const int don        = 12;       // tombol mengurangi watt
 
-int buttonState = 0;         // variable for reading the pushbutton status
-int buttonState1 = 0;         // variable for reading the pushbutton status
-int pwm =0;
-int prestate =0;
-int fadeValue = 0;
+int buttonState      = 0;        // variable for reading the pushbutton status
+int buttonState1     = 0;        // variable for reading the pushbutton status
+int pwm              = 0;
+int prestate         = 0;
+int fadeValue        = 0;
+
 
 unsigned ButtonPressCount = 0;
 //##############################################
@@ -26,19 +28,19 @@ void set() {
 
   if (buttonState == 0 && prestate == 0 && pwm < 11) {
     pwm++;
-    digitalWrite(ledPin, 0);
+    // // digitalWrite(ledPin, 0);
     delay(100);
     // turn LED off
-    digitalWrite(ledPin, 1);
+    // digitalWrite(ledPin, 1);
 
     prestate = 1;
   } 
   else if (buttonState1 == 0 && prestate == 0 && pwm > 0) {
     pwm--;
-    digitalWrite(ledPin, 0);
+    // digitalWrite(ledPin, 0);
     delay(100);
     // turn LED off
-    digitalWrite(ledPin, 1);
+    // digitalWrite(ledPin, 1);
 
     prestate = 1;
   } else if(buttonState == 1) {
@@ -50,7 +52,6 @@ void set() {
 void poweronoff()
 {
   static unsigned long buttonPressTime = 0;
-
 
   if (!firestate && !digitalRead(fire) && (millis() - buttonPressTime > 50))
   {
@@ -71,23 +72,21 @@ void poweronoff()
   // else ButtonPressCount = 0;
 }
 
-
-
 void proses()
 { 
   if(digitalRead(fire)==0){
     analogWrite(coil, fadeValue);
-    digitalWrite (ledPin, 0);
+    // // // digitalWrite(ledPin, 0);
   }
   else{
     digitalWrite(coil,0);
-    digitalWrite(ledPin,1);
+    // // digitalWrite(ledPin,1);
     if(!potensio){
       fadeValue = map(pwm, 0, 10, 0, 255);   // sets the value (range from 0 to 255):
       set();
     }
     else{
-      fadeValue = analogRead(A0);   // sets the value (range from 0 to 255):
+      fadeValue = analogRead(potPin);   // sets the value (range from 0 to 255):
     }
   }
   // wait for 3 milliseconds to see the dimming effect    
@@ -101,39 +100,16 @@ void setup()
      if (debug){
       Serial.begin(9600);
      }
-  
-  analogWriteFreq(1000);
-  analogWriteRange(1100);
-
+ if ( !potensio){
   pinMode(up, INPUT_PULLUP);
   pinMode(don, INPUT_PULLUP);
   pinMode(fire, INPUT_PULLUP);
-
-  pinMode(A0, INPUT);
+ }
+  pinMode(potPin, INPUT);
   pinMode(coil,1);
   pinMode(ledPin,1);
   } 
  
 void loop() {
   proses();
-  // poweronoff();
-
-
-/*
-  if(!fire){
-    if(!firestate){
-
-    }
-    else{
-      
-    }
-  }
-
-  if(on){
-    digitalWrite(ledPin,0);
-  }
-  else{
-    digitalWrite(ledPin ,1);
-  }
-*/
 }
